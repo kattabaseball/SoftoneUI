@@ -4,6 +4,7 @@ import { StudentDto } from '../Dto/StudentDto';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { Table } from 'primeng/table';
+import { ESPType } from '../Enum/StudentSPEnums';
 
 
 
@@ -15,11 +16,23 @@ import { Table } from 'primeng/table';
 export class HomeComponent {
 
   students: StudentDto[] = [];
+
   addStudentModal: boolean = false;
+
   date: Date | undefined = new Date();
 
   editClicked: boolean = false;
+
   detailsView: boolean = false;
+
+  currentEditImageUrl: string = '';
+
+  currentEditId: number = 0;
+
+  mainTableViewCss!: string;
+
+  selectedStudent!: StudentDto;
+
 
   addStudentForm = this.fb.group({
     id: [''],
@@ -33,17 +46,11 @@ export class HomeComponent {
     address: ['', Validators.required]
 
   })
-  currentEditImageUrl: string = '';
-  currentEditId: number = 0;
+  
 
-  mainTableViewCss!: string;
-
-  selectedStudent!: StudentDto;
-
-  constructor(public studentService: StudentService, public fb: FormBuilder, private messageService: MessageService,
-    private confirmationService: ConfirmationService) {
-
-  }
+  constructor(public studentService: StudentService,
+              public fb: FormBuilder, private messageService: MessageService,
+              private confirmationService: ConfirmationService) { }
 
  
 
@@ -75,7 +82,7 @@ export class HomeComponent {
 
   addNewStudent() {
 
-    this.studentService.AddStudentRecord("INSERT", this.addStudentForm.value).subscribe(result => {
+    this.studentService.AddStudentRecord(ESPType.Insert, this.addStudentForm.value).subscribe(result => {
       if (result == 'Inserted successfully') {
         this.messageService.add({ severity: 'success', summary: 'Successful', detail: 'Student Record Created', life: 3000 });
         this.addStudentModal = false;
@@ -92,7 +99,7 @@ export class HomeComponent {
 
     this.addStudentForm.get('id')?.patchValue(this.currentEditId.toString());
 
-    this.studentService.UpdateStudentRecord("UPDATE", this.addStudentForm.value).subscribe(result => {
+    this.studentService.UpdateStudentRecord(ESPType.Update, this.addStudentForm.value).subscribe(result => {
       if(result == 'Updated successfully')
         {
           this.messageService.add({ severity: 'success', summary: 'Successful', detail: 'Student Record Updated', life: 3000 });
@@ -121,7 +128,7 @@ export class HomeComponent {
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
 
-        this.studentService.RemoveStudent("DELETE", student.id).subscribe(result => {
+        this.studentService.RemoveStudent(ESPType.Delete, student.id).subscribe(result => {
           if (result == 'Deleted successfully') {
             this.messageService.add({ severity: 'success', summary: 'Successful', detail: 'Student Deleted', life: 3000 });
             this.loadStudentDetails();
