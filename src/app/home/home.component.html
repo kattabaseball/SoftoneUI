@@ -1,0 +1,310 @@
+<div class="row px-5 my-5 w-100">
+    <div [ngClass]="mainTableViewCss">
+
+        <p-toast />
+        <p-toolbar>
+            <ng-template pTemplate="left">
+                <p-button pRipple severity="success" label="Add New Student" icon="pi pi-plus" class="mr-2"
+                    (click)="openAddStudent()" />
+
+            </ng-template>
+
+
+        </p-toolbar>
+
+
+        <p-table 
+            #dt [value]="students" 
+            selectionMode="single" 
+            [(selection)]="selectedStudent"
+            (onRowSelect)="onRowSelect($event)" 
+            (onRowUnselect)="onRowUnselect($event)" 
+            [rows]="10"
+            [rowsPerPageOptions]="[10, 25, 50]" 
+            [paginator]="true" 
+            [tableStyle]="{ 'min-width': '75rem' }"
+            dataKey="id"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+            [globalFilterFields]="['firstName', 'lastName', 'email', 'nic', 'mobile']"
+            [showCurrentPageReport]="true">
+            
+            <ng-template pTemplate="caption">
+                <div class="d-flex justify-content-between">
+                    <h5 class="lead fw-bold text-primary m-0">Student Details</h5>
+                    <span class="p-input-icon-left">
+                        <i class="pi pi-search"></i>
+                        <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..." />
+                    </span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+
+                    <th pSortableColumn="firstName" style="min-width:5rem">
+                        First Name <p-sortIcon field="firstname" />
+                    </th>
+                    <th pSortableColumn="lastName" style="min-width:5rem">
+                        Last Name <p-sortIcon field="lastname" />
+                    </th>
+                    <th pSortableColumn="mobile" style="min-width:5rem">
+                        Mobile <p-sortIcon field="mobile" />
+                    </th>
+                    <th pSortableColumn="email" style="min-width:10rem">
+                        Email <p-sortIcon field="email" />
+                    </th>
+                    <th pSortableColumn="nic" style="min-width:5rem">
+                        NIC <p-sortIcon field="nic" />
+                    </th>
+                    <th></th>
+
+                    <th></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-student>
+                <tr [pSelectableRow]="student">
+
+                    <td>
+                        {{ student.firstName }}
+                    </td>
+                    <td>
+                        {{ student.lastName }}
+                    </td>
+                    <td>
+                        {{ student.mobile }}
+                    </td>
+                    <td>
+                        {{ student.email }}
+                    </td>
+                    <td>
+                        {{ student.nic }}
+                    </td>
+                    <td>
+                        <img [src]="student.imageUrl" [alt]="student.firstName" width="60px" height="60px" class="shadow-4" />
+                    </td>
+
+                    <td class="d-flex justify-content-space-around">
+                        <p-button pRipple icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true"
+                            severity="success" (click)="editStudent(student)" />
+                        <p-button pRipple icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true"
+                            (click)="deleteStudent(student)" />
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="summary">
+                <div class="flex align-items-center justify-content-between">
+                    In total there are {{ students ? students.length : 0 }} students.
+                </div>
+            </ng-template>
+        </p-table>
+
+
+        <p-dialog 
+                [(visible)]="addStudentModal" 
+                [style]="{ width: '550px' }" 
+                [header]="editClicked ? 'Edit Student' : 'Add a New Student'" 
+                [modal]="true"
+                styleClass="p-fluid">
+
+            <form [formGroup]="addStudentForm" validate>
+
+
+                <div *ngIf="editClicked" class="row">
+                    <div class="text-center">
+                        <img [src]="currentEditImageUrl"
+                            [alt]="'https://images2.corriereobjects.it/methode_image/socialshare/2021/02/13/e52c4ef0-6dea-11eb-a923-8177dd174962.jpg'"
+                            class="block m-auto pb-3" width="450px" height="400px" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <div class="mb-3">
+                            <label class="fw-bold" for="firstName">First Name</label>
+                            <input type="text" pInputText required formControlName="firstname" class="w-full"
+                                name="firstName" placeholder="Type your first name">
+                            <small class="p-error"
+                                *ngIf="addStudentForm.controls['firstname'].invalid && (addStudentForm.controls['firstname'].dirty || addStudentForm.controls['firstname'].touched)">
+                                Field is required
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="mb-3">
+                            <label class="fw-bold" for="lastname">Last Name</label>
+                            <input type="text" pInputText required formControlName="lastname" class="w-full"
+                                name="lastname" placeholder="Type your last name">
+                            <small class="p-error"
+                                *ngIf="addStudentForm.controls['lastname'].invalid && (addStudentForm.controls['lastname'].dirty || addStudentForm.controls['lastname'].touched)">
+                                Field is required
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <div class="mb-3">
+                            <label class="fw-bold" for="email">Email</label>
+                            <input type="email" pInputText required formControlName="email" class="w-full" name="email"
+                                placeholder="Type your email">
+                            <small class="p-error"
+                                *ngIf="addStudentForm.controls['email'].invalid && (addStudentForm.controls['email'].dirty || addStudentForm.controls['email'].touched)">
+                                <div *ngIf="addStudentForm.get('email')?.hasError('required')">Email is required</div>
+                                <div *ngIf="addStudentForm.get('email')?.hasError('email')">Email is invalid</div>
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="mb-3">
+                            <label class="fw-bold" for="email">Mobile Number</label>
+                            <input type="text" pInputText required formControlName="mobile" class="w-full" name="mobile"
+                                placeholder="Type your mobile number">
+                            <small class="p-error"
+                                *ngIf="addStudentForm.controls['mobile'].invalid && (addStudentForm.controls['mobile'].dirty || addStudentForm.controls['mobile'].touched)">
+                                Field is required
+                            </small>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <div class="mb-3">
+                            <label class="fw-bold" for="nic">NIC Number</label>
+                            <input type="text" pInputText required formControlName="nic" class="w-full" name="nic"
+                                placeholder="Type your nic number">
+                            <small class="p-error"
+                                *ngIf="addStudentForm.controls['nic'].invalid && (addStudentForm.controls['nic'].dirty || addStudentForm.controls['nic'].touched)">
+                                Field is required
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="mb-3">
+                            <label class="fw-bold" for="dob">Date of birth</label>
+                            <p-calendar appendTo="body" required [(ngModel)]="date" formControlName="dateofbirth" />
+                            <small class="p-error"
+                                *ngIf="addStudentForm.controls['dateofbirth'].invalid && (addStudentForm.controls['dateofbirth'].dirty || addStudentForm.controls['dateofbirth'].touched)">
+                                Field is required
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <div class="mb-3">
+                            <label class="fw-bold" for="address">Address</label>
+                            <input type="text" pInputText required formControlName="address" class="w-full"
+                                name="address" placeholder="Type your address">
+                            <small class="p-error"
+                                *ngIf="addStudentForm.controls['address'].invalid && (addStudentForm.controls['address'].dirty || addStudentForm.controls['address'].touched)">
+                                Field is required
+                            </small>
+
+                        </div>
+                    </div>
+
+
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <div class="mb-3">
+                            <label class="fw-bold" for="firstName">Image</label>
+                            <input type="text" pInputText required formControlName="imageurl" class="w-full"
+                                name="imageurl" placeholder="Paste a google image url">
+                            <small class="p-error"
+                                *ngIf="addStudentForm.controls['imageurl'].invalid && (addStudentForm.controls['imageurl'].dirty || addStudentForm.controls['imageurl'].touched)">
+                                Field is required
+                            </small>
+                        </div>
+                    </div>
+
+
+                </div>
+
+                <div *ngIf="!editClicked" class="row py-3">
+                    <p-button label="ADD" class="w-full" [disabled]="addStudentForm.invalid"
+                        (click)="addNewStudent()" />
+
+                </div>
+
+                <div *ngIf="editClicked" class="row py-3">
+                    <p-button label="UPDATE" class="w-full" [disabled]="addStudentForm.invalid"
+                        (click)="updateStudent()" />
+
+                </div>
+            </form>
+
+
+        </p-dialog>
+
+        <p-confirmDialog [style]="{ width: '450px' }" />
+
+
+    </div>
+
+
+    <div *ngIf="detailsView" class="col-lg-4 p-3 border border-2 shadow-sm">
+
+        <div class="d-flex-column">
+            <div class="align-items-center">
+                <p class="lead fw-bold text-center">{{selectedStudent.firstName}} {{selectedStudent.lastName}}</p>
+
+                <div class="text-center">
+                    <img [src]="selectedStudent.imageUrl"
+                        [alt]="'https://images2.corriereobjects.it/methode_image/socialshare/2021/02/13/e52c4ef0-6dea-11eb-a923-8177dd174962.jpg'"
+                        class="block m-auto pb-3" width="300px" height="300px" />
+                </div>
+
+
+                <table class="table my-4">
+
+                    <tbody>
+                        <tr>
+                            <th>First Name</th>
+                            <td>{{selectedStudent.firstName}}</td>
+                        </tr>
+
+                        <tr>
+                            <th>Last Name</th>
+                            <td>{{selectedStudent.lastName}}</td>
+                        </tr>
+                        <tr>
+                            <th>Mobile</th>
+                            <td>{{selectedStudent.mobile}}</td>
+                        </tr>
+                        <tr>
+                            <th>Email</th>
+                            <td>Otto</td>
+                        </tr>
+                        <tr>
+                            <th>NIC</th>
+                            <td>{{selectedStudent.email}}</td>
+                        </tr>
+
+                        <tr>
+                            <th>Date Of Birth</th>
+                            <td>{{selectedStudent.dateOfBirth | date}}</td>
+                        </tr>
+
+                        <tr>
+                            <th>Address</th>
+                            <td>{{selectedStudent.address}}</td>
+                        </tr>
+
+                    </tbody>
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
